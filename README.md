@@ -35,6 +35,7 @@
   ![4](https://github.com/DevTae/pronunciation-evaluator/assets/55177359/478e2f74-a5bc-4ad4-9816-3e4ddb1d1a0b)
 
 ### Reference
-- https://ko.wikipedia.org/wiki/%EA%B5%AD%EC%A0%9C_%EC%9D%8C%EC%84%B1_%EA%B8%B0%ED%98%B8
 - https://github.com/stannam/hangul_to_ipa
 - https://github.com/mphilli/English-to-IPA
+- http://pronunciation.cs.pusan.ac.kr/
+- https://ko.wikipedia.org/wiki/%EA%B5%AD%EC%A0%9C_%EC%9D%8C%EC%84%B1_%EA%B8%B0%ED%98%B8
