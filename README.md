@@ -24,7 +24,7 @@
   - `동적계획법 (Dynamic Programming)` 활용
   ```python
   { 'answer_ipa': '정답 IPA', 'user_ipa': '유저 IPA', 'score': "전체 점수",
-    'summary': "각 매핑된 부분에 대한 피드백 제공"
+    'summary': "각 매핑된 부분에 대한 피드백 제공" }
   ```
   ![3](https://github.com/DevTae/pronunciation-evaluator/assets/55177359/7457ff1d-974b-4ecf-bba4-e032ba72e6c1)
 
