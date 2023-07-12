@@ -29,10 +29,18 @@
   ![3](https://github.com/DevTae/pronunciation-evaluator/assets/55177359/7457ff1d-974b-4ecf-bba4-e032ba72e6c1)
 
 
+- 채점 기준
+  - 발음 단위를 기준으로 `11개에 대한 속성` 에 대한 유사도 계산
+  - `자음`, `모음`, `받침 자음`의 조합을 바탕으로 `발음 단위에 대한 길이` 비교 
+    - ex. `Consonant + Vowel + Consonant` = 3, `Vowel + Consonant` = 2, `Vowel` = 1
+  - 동적계획법 바탕으로 최대 평균값 구할 때, `입력 문자열과 정답 문자열에 대한 전체 길이` 비교
+
+
 - pronunciation-evaluator 적용 예시
   - 다음과 같이 적용할 수 있음.
     
   ![4](https://github.com/DevTae/pronunciation-evaluator/assets/55177359/478e2f74-a5bc-4ad4-9816-3e4ddb1d1a0b)
+
 
 ### Reference
 - https://github.com/stannam/hangul_to_ipa
