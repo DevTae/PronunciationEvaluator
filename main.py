@@ -194,10 +194,7 @@ def get_scores(values_ans, types_ans, values_usr, types_usr):
     
     for i in range(len(types_ans)):
         for j in range(len(types_usr)):
-            score = get_score_1d(values_ans[i], values_usr[j])
-            if types_ans[i] != types_usr[j]:
-                score *= min(1, len(types_usr[j]) / len(types_ans[i]))
-            scores[i][j] = score
+            scores[i][j] = get_score_1d(values_ans[i], values_usr[j])
             
     return scores
 
