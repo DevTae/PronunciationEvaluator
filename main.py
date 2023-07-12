@@ -219,25 +219,22 @@ def get_score(answer_ipa, user_ipa, option="default"):
     # 평균이 최대가 되는 경우를 찾게 됨
     for i in range(1, len(types_ans) + 1):
         for j in range(1, len(types_usr) + 1):
-            # right
-            expected_right = (avg_of_scores[i][j-1] * cnt_of_directions[i][j-1] + scores[i-1][j-1]) / (cnt_of_directions[i][j-1] + 1)
-            expected_right *= 0.9 # 두 개로 하나를 채우는 것이기 때문에 약간의 점수 감소
+            # right 두 개로 하나를 채우는 것이기 때문에 cnt 2 증가
+            expected_right = (avg_of_scores[i][j-1] * cnt_of_directions[i][j-1] + scores[i-1][j-1]) / (cnt_of_directions[i][j-1] + 2)
             if avg_of_scores[i][j] < expected_right:
                 avg_of_scores[i][j] = expected_right
-                cnt_of_directions[i][j] = cnt_of_directions[i][j-1] + 1
+                cnt_of_directions[i][j] = cnt_of_directions[i][j-1] + 2
                 directions[i][j] = "r"
             
-            # bottom
-            expected_bottom = (avg_of_scores[i-1][j] * cnt_of_directions[i-1][j] + scores[i-1][j-1]) / (cnt_of_directions[i-1][j] + 1)
-            expected_bottom *= 0.6 # 하나로 두 개를 떼우려는 것이기에 점수 대폭 감소
+            # bottom 하나로 두 개를 떼우려는 것이기에 cnt 3 증가
+            expected_bottom = (avg_of_scores[i-1][j] * cnt_of_directions[i-1][j] + scores[i-1][j-1]) / (cnt_of_directions[i-1][j] + 3)
             if avg_of_scores[i][j] < expected_bottom:
                 avg_of_scores[i][j] = expected_bottom
-                cnt_of_directions[i][j] = cnt_of_directions[i-1][j] + 1
+                cnt_of_directions[i][j] = cnt_of_directions[i-1][j] + 3
                 directions[i][j] = "b"
             
             # diagonal
             expected_diagonal = (avg_of_scores[i-1][j-1] * cnt_of_directions[i-1][j-1] + scores[i-1][j-1]) / (cnt_of_directions[i-1][j-1] + 1)
-            expected_diagonal *= 1 # 정상적인 루트이므로 점수 그대로 진행
             if avg_of_scores[i][j] < expected_diagonal:
                 avg_of_scores[i][j] = expected_diagonal
                 directions[i][j] = "d"
