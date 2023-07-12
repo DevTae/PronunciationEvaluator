@@ -194,8 +194,11 @@ def get_scores(values_ans, types_ans, values_usr, types_usr):
     
     for i in range(len(types_ans)):
         for j in range(len(types_usr)):
-            scores[i][j] = get_score_1d(values_ans[i], values_usr[j])
-    
+            score = get_score_1d(values_ans[i], values_usr[j])
+            if types_ans[i] != types_usr[j]:
+                score *= min(1, len(types_usr[j]) / len(types_ans[i]))
+            scores[i][j] = score
+            
     return scores
 
 # 두 values 사이에서 score 채점 진행 (동적계획법 활용)
@@ -213,12 +216,15 @@ def get_score(answer_ipa, user_ipa, option="default"):
     # 기본 설정
     avg_of_scores[:,0] = 0
     avg_of_scores[0,:] = 0
+    for i in range(1, len(types_ans) + 1):
+        cnt_of_directions[i][0] = i - 1
     
     # 평균이 최대가 되는 경우를 찾게 됨
     for i in range(1, len(types_ans) + 1):
         for j in range(1, len(types_usr) + 1):
             # right
             expected_right = (avg_of_scores[i][j-1] * cnt_of_directions[i][j-1] + scores[i-1][j-1]) / (cnt_of_directions[i][j-1] + 1)
+            expected_right *= 0.9 # 두 개로 하나를 채우는 것이기 때문에 약간의 점수 감소
             if avg_of_scores[i][j] < expected_right:
                 avg_of_scores[i][j] = expected_right
                 cnt_of_directions[i][j] = cnt_of_directions[i][j-1] + 1
@@ -226,6 +232,7 @@ def get_score(answer_ipa, user_ipa, option="default"):
             
             # bottom
             expected_bottom = (avg_of_scores[i-1][j] * cnt_of_directions[i-1][j] + scores[i-1][j-1]) / (cnt_of_directions[i-1][j] + 1)
+            expected_bottom *= 0.6 # 하나로 두 개를 떼우려는 것이기에 점수 대폭 감소
             if avg_of_scores[i][j] < expected_bottom:
                 avg_of_scores[i][j] = expected_bottom
                 cnt_of_directions[i][j] = cnt_of_directions[i-1][j] + 1
@@ -233,6 +240,7 @@ def get_score(answer_ipa, user_ipa, option="default"):
             
             # diagonal
             expected_diagonal = (avg_of_scores[i-1][j-1] * cnt_of_directions[i-1][j-1] + scores[i-1][j-1]) / (cnt_of_directions[i-1][j-1] + 1)
+            expected_diagonal *= 1 # 정상적인 루트이므로 점수 그대로 진행
             if avg_of_scores[i][j] < expected_diagonal:
                 avg_of_scores[i][j] = expected_diagonal
                 directions[i][j] = "d"
@@ -242,7 +250,7 @@ def get_score(answer_ipa, user_ipa, option="default"):
     i = len(types_ans)
     j = min(i, len(types_usr))
     max_score = 0
-    for j_ in range(i, len(types_usr)):
+    for j_ in range(i, len(types_usr) + 1):
         score = avg_of_scores[i][j_]
         if score > max_score:
             max_score = score
@@ -282,6 +290,14 @@ def get_score(answer_ipa, user_ipa, option="default"):
             elif direction == 'd':
                 i -= 1
                 j -= 1
+
+        # 전체 정답 중에서 중간부터 채점한 게 높을 땐, 이전 문제 채점도 추가.
+        if i > 1:
+            while i > 0:
+                answer_ipa_splited.append(origs_ans[i-1])
+                user_ipa_splited.append([])
+                per_scores.append(0)
+                i -= 1  
         
         for answer_ipa_char, user_ipa_char, per_score in zip(answer_ipa_splited, user_ipa_splited, per_scores):
             result_dict["summary"].append([answer_ipa_char, user_ipa_char, per_score])
