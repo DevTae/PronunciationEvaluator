@@ -292,12 +292,11 @@ def get_score(answer_ipa, user_ipa, option="default"):
                 j -= 1
 
         # 전체 정답 중에서 중간부터 채점한 게 높을 땐, 이전 문제 채점도 추가.
-        if i > 1:
-            while i > 0:
-                answer_ipa_splited.append(origs_ans[i-1])
-                user_ipa_splited.append([])
-                per_scores.append(0)
-                i -= 1  
+        while i > 0:
+            answer_ipa_splited.append(origs_ans[i-1])
+            user_ipa_splited.append([])
+            per_scores.append(0)
+            i -= 1  
         
         for answer_ipa_char, user_ipa_char, per_score in zip(answer_ipa_splited, user_ipa_splited, per_scores):
             result_dict["summary"].append([answer_ipa_char, user_ipa_char, per_score])
