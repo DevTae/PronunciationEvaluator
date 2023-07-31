@@ -27,9 +27,9 @@ consonants["조음강도"] = consonants["조음강도"].replace("None", "Lenis")
 # shape (Unrounded) -0.5 --- 0.5 (Rounded)
 vowel_shp = { "Unrounded": -0.5, "Rounded+Unrounded": -0.17, "Unrounded+Rounded": 0.17, "Rounded": 0.5 }
 # width position (Front) -0.5 --- 0.5 (Back)
-vowel_wps = { "Front": -0.5, "Back+Front": -0.17, "Front+Back": 0.17, "Back": 0.5 }
+vowel_wps = { "Front": -0.5, "NearFront": -0.4, "Back+Front": -0.17, "Front+Back": 0.17, "NearBack": 0.4, "Back": 0.5 }
 # height position (Low) -0.5 --- 0.5 (High)
-vowel_hps = { "Low": -0.5, "Mid+Low": -0.3, "High+Low": -0.1, "Mid": 0, "High+Mid": 0.2, "High": 0.5 }
+vowel_hps = { "Low": -0.5, "NearLow": -0.4, "Mid+Low": -0.3, "High+Low": -0.1, "Mid": 0, "High+Mid": 0.2, "NearHigh" : 0.4, "High": 0.5 }
 
 vowels = pd.read_csv("csv/vowels.csv")
 

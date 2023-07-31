@@ -31,3 +31,7 @@ kʰ,Velar,Plosive,Aspirated,No
 k*,Velar,Plosive,Fortis,No
 ŋ,Velar,Nasal,None,Yes
 h,Glottal,Fricative,Aspirated,No
+θ,Alveolar,Fricative,Lenis,No
+ð,Alveolar,Fricative,Lenis,Yes
+ʃ,Alveo-Palatal,Fricative,Lenis,No
+ʒ,Alveo-Palatal,Fricative,Lenis,Yes
