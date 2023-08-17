@@ -81,7 +81,7 @@ def split_types(types):
     result = []
     
     while len(types) > 0:
-        if types.startswith("CVCC") or types.startswith("CVc"):
+        if types.startswith("CVCC") or types.startswith("CVc") or types.startswith("CVCc"):
             result.append(types[:3])
             types = types[3:]
         elif types.startswith("CVCV") or types.startswith("CVV") or types.startswith("VCC") or types.startswith("Vc"):
