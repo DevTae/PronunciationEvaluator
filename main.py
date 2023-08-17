@@ -21,6 +21,7 @@ conso_voi = { "Yes": 0.5, "No": -0.5 }
 
 consonants = pd.read_csv("csv/consonants.csv")
 consonants["조음강도"] = consonants["조음강도"].replace("None", "Lenis") # None -> Lenis
+consonants = consonants.fillna("Lenis")
 
 # 모음 기준 (중요성 있는 순서대로 나열)
 # 1. 입술 모양
