@@ -1,8 +1,11 @@
 # Developed by DevTae@2023
 
+import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+
+path = "" # base_path
 
 # 자음 기준 (중요성 있는 순서대로 나열)
 # 1. 조음 위치, 유성음 여부
@@ -19,7 +22,7 @@ conso_str = { "Lenis": 0, "Aspirated": 0.5, "Fortis": 1 }
 # 유성음인지 아닌지 구분
 conso_voi = { "Yes": 0.5, "No": -0.5 }
 
-consonants = pd.read_csv("csv/consonants.csv")
+consonants = pd.read_csv(os.path.join(path, "csv", "consonants.csv"))
 consonants["조음강도"] = consonants["조음강도"].replace("None", "Lenis") # None -> Lenis
 consonants = consonants.fillna("Lenis")
 
@@ -34,7 +37,7 @@ vowel_wps = { "Front": -0.5, "NearFront": -0.4, "Back+Front": -0.17, "Front+Back
 # height position (Low) -0.5 --- 0.5 (High)
 vowel_hps = { "Low": -0.5, "NearLow": -0.4, "Mid+Low": -0.3, "High+Low": -0.1, "Mid": 0, "High+Mid": 0.2, "NearHigh" : 0.4, "High": 0.5 }
 
-vowels = pd.read_csv("csv/vowels.csv")
+vowels = pd.read_csv(os.path.join(path, "csv", "vowels.csv")
 
 
 # data 에서 각 IPA 문자에 대응되는 수치를 저장한다.
@@ -302,5 +305,7 @@ def get_score(answer_ipa, user_ipa, option="default"):
 
         return result_dict
 
+
+# for test
 if __name__ == "__main__":
     print(get_score("ɑnnjʌŋɑsɛjo", "ɑnnjjmassɛjjo"))
