@@ -37,7 +37,7 @@ vowel_wps = { "Front": -0.5, "NearFront": -0.4, "Back+Front": -0.17, "Front+Back
 # height position (Low) -0.5 --- 0.5 (High)
 vowel_hps = { "Low": -0.5, "NearLow": -0.4, "Mid+Low": -0.3, "High+Low": -0.1, "Mid": 0, "High+Mid": 0.2, "NearHigh" : 0.4, "High": 0.5 }
 
-vowels = pd.read_csv(os.path.join(path, "csv", "vowels.csv")
+vowels = pd.read_csv(os.path.join(path, "csv", "vowels.csv"))
 
 
 # data 에서 각 IPA 문자에 대응되는 수치를 저장한다.
@@ -79,6 +79,7 @@ def mapping_ipa_with_value(data):
             idx += 1
     return values, types, origs
 
+
 # 자음과 모음이 한 발음 단위로 나뉘도록 분할
 def split_types(types):
     result = []
@@ -98,7 +99,9 @@ def split_types(types):
             types = ""
     
     return result
+"""
 
+"""
 # C+V 단위 Vectorization 진행
 # [0] conso_pos
 # [1] conso_how
@@ -172,6 +175,7 @@ def vectorize_ipa(values, types, origs):
 
     return vector_values, vector_types, vector_origs
 
+
 # 두 value 사이에서의 score 를 구하는 함수 (1차원) (default)
 def get_score_1d(values_ans, values_usr):
     assert isinstance(values_ans, list), "1차원 리스트에 대한 입력값만 지원합니다"
@@ -193,6 +197,7 @@ def get_score_1d(values_ans, values_usr):
     
     return (sum_score / cnt_score) ** 2 # 거듭제곱 형식으로 정답보다 멀수록 점수를 더 차감하는 방식
 
+
 # values_1 과 values_2 에 대한 서로 대응하는 distance 를 계산한다.
 # types_1 : answer, types_2 : user_input
 def get_scores(values_ans, types_ans, values_usr, types_usr):
@@ -204,6 +209,51 @@ def get_scores(values_ans, types_ans, values_usr, types_usr):
             
     return scores
 
+
+# s1 : answer_ipa, s2 : user_ipa
+def get_score(s1, s2, pivot=None, debug=False):
+    if len(s1) < len(s2):
+        return get_score(s2, s1, s1, debug)
+
+    if len(s2) == 0:
+        return len(s1)
+
+    values_ans, types_ans, origs_ans = mapping_ipa_with_value(s1)
+    values_ans, types_ans, origs_ans = vectorize_ipa(values_ans, types_ans, origs_ans)
+    values_usr, types_usr, origs_usr = mapping_ipa_with_value(s2)
+    values_usr, types_usr, origs_usr = vectorize_ipa(values_usr, types_usr, origs_usr)
+
+    previous_row = range(len(values_usr) + 1) # values_usr is shorter than values_ans (0 ~ len(values_usr))
+    
+    for i, c1 in enumerate(values_ans): # values_ans is longer than values_usr
+        current_row = [i + 1]
+        for j, c2 in enumerate(values_usr):
+            insertions = previous_row[j + 1] + 1
+            deletions = current_row[j] + 1
+            substitutions = previous_row[j] + (1 - get_score_1d(c1, c2))
+            current_row.append(min(insertions, deletions, substitutions))
+
+        if debug:
+            print(current_row[1:])
+
+        previous_row = current_row
+
+    per = previous_row[-1] / (len(values_ans) if pivot == None else len(values_usr))
+    score = max(1 - per, 0)
+
+    # score 최댓값이 나오게 하는 path 파악
+    result_dict = dict()
+    result_dict["answer_ipa"] = s1
+    result_dict["user_ipa"] = s2
+    result_dict["score"] = score
+    result_dict["summary"] = []
+
+    pass # 피드백 부분 코드 필요함
+
+    return result_dict    
+
+
+"""
 # 두 values 사이에서 score 채점 진행 (동적계획법 활용)
 def get_score(answer_ipa, user_ipa, option="default"):
     values_ans, types_ans, origs_ans = mapping_ipa_with_value(answer_ipa)
@@ -304,7 +354,7 @@ def get_score(answer_ipa, user_ipa, option="default"):
         result_dict["summary"].reverse() 
 
         return result_dict
-
+"""
 
 # for test
 if __name__ == "__main__":
