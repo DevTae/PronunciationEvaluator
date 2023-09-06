@@ -85,7 +85,7 @@ def split_types(types):
     result = []
     
     while len(types) > 0:
-        if types.startswith("CVCC") or types.startswith("CVc") or types.startswith("CVCc"):
+        if types.startswith("CVCC") or types.startswith("CVc"):
             result.append(types[:3])
             types = types[3:]
         elif types.startswith("CVCV") or types.startswith("CVV") or types.startswith("VCC") or types.startswith("Vc"):
@@ -99,9 +99,8 @@ def split_types(types):
             types = ""
     
     return result
-"""
 
-"""
+
 # C+V 단위 Vectorization 진행
 # [0] conso_pos
 # [1] conso_how
@@ -127,7 +126,7 @@ def vectorize_ipa(values, types, origs):
     for types_ in types_after:
         vector_value = []
         vector_orig = []
-        
+
         if types_ == "CVC" or types_ == "CVc":
             vector_value += values[idx]
             vector_value += values[idx+1]
@@ -198,18 +197,6 @@ def get_score_1d(values_ans, values_usr):
     return (sum_score / cnt_score) ** 2 # 거듭제곱 형식으로 정답보다 멀수록 점수를 더 차감하는 방식
 
 
-# values_1 과 values_2 에 대한 서로 대응하는 distance 를 계산한다.
-# types_1 : answer, types_2 : user_input
-def get_scores(values_ans, types_ans, values_usr, types_usr):
-    scores = np.zeros((len(types_ans), len(types_usr)), dtype=float)
-    
-    for i in range(len(types_ans)):
-        for j in range(len(types_usr)):
-            scores[i][j] = get_score_1d(values_ans[i], values_usr[j])
-            
-    return scores
-
-
 # s1 : answer_ipa, s2 : user_ipa
 def get_score(s1, s2, pivot=None, debug=False):
     if len(s1) < len(s2):
@@ -218,10 +205,16 @@ def get_score(s1, s2, pivot=None, debug=False):
     if len(s2) == 0:
         return len(s1)
 
+    """
     values_ans, types_ans, origs_ans = mapping_ipa_with_value(s1)
     values_ans, types_ans, origs_ans = vectorize_ipa(values_ans, types_ans, origs_ans)
     values_usr, types_usr, origs_usr = mapping_ipa_with_value(s2)
     values_usr, types_usr, origs_usr = vectorize_ipa(values_usr, types_usr, origs_usr)
+    """
+
+    # 초성, 중성, 종성 부분은 STT 모델 결과가 문법 교정이 되어 있지 않기 때문에 나온 값 그대로 Levenshtein Distance 계산 진행
+    values_ans, _, _ = mapping_ipa_with_value(s1)
+    values_usr, _, _ = mapping_ipa_with_value(s2)
 
     previous_row = range(len(values_usr) + 1) # values_usr is shorter than values_ans (0 ~ len(values_usr))
     
@@ -239,12 +232,16 @@ def get_score(s1, s2, pivot=None, debug=False):
         previous_row = current_row
 
     per = previous_row[-1] / (len(values_ans) if pivot == None else len(values_usr))
-    score = max(1 - per, 0)
+    score = round(max(1 - per, 0), 2)
 
     # score 최댓값이 나오게 하는 path 파악
     result_dict = dict()
-    result_dict["answer_ipa"] = s1
-    result_dict["user_ipa"] = s2
+    if pivot == None:
+        result_dict["answer_ipa"] = s1
+        result_dict["user_ipa"] = s2
+    else:
+        result_dict["answer_ipa"] = s2
+        result_dict["user_ipa"] = s1
     result_dict["score"] = score
     result_dict["summary"] = []
 
@@ -254,6 +251,17 @@ def get_score(s1, s2, pivot=None, debug=False):
 
 
 """
+# values_1 과 values_2 에 대한 서로 대응하는 distance 를 계산한다.
+# types_1 : answer, types_2 : user_input
+def get_scores(values_ans, types_ans, values_usr, types_usr):
+    scores = np.zeros((len(types_ans), len(types_usr)), dtype=float)
+    
+    for i in range(len(types_ans)):
+        for j in range(len(types_usr)):
+            scores[i][j] = get_score_1d(values_ans[i], values_usr[j])
+            
+    return scores
+
 # 두 values 사이에서 score 채점 진행 (동적계획법 활용)
 def get_score(answer_ipa, user_ipa, option="default"):
     values_ans, types_ans, origs_ans = mapping_ipa_with_value(answer_ipa)
