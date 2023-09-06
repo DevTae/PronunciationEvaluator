@@ -203,7 +203,12 @@ def get_score(s1, s2, pivot=None, debug=False):
         return get_score(s2, s1, s1, debug)
 
     if len(s2) == 0:
-        return len(s1)
+        result_dict = dict()
+        result_dict["answer_ipa"] = s1
+        result_dict["user_ipa"] = s2
+        result_dict["score"] = 0
+        result_dict["summary"] = []
+        return result_dict
 
     """
     values_ans, types_ans, origs_ans = mapping_ipa_with_value(s1)
