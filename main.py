@@ -4,8 +4,10 @@ import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from pathlib import Path
 
-path = "" # base_path
+#path = "" # base_path
+path = Path(__file__).resolve().parent
 
 # 자음 기준 (중요성 있는 순서대로 나열)
 # 1. 조음 위치, 유성음 여부
