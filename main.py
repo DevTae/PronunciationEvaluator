@@ -9,35 +9,35 @@ from pathlib import Path
 #path = "" # base_path
 path = Path(__file__).resolve().parent
 
-# 자음 기준 (중요성 있는 순서대로 나열)
-# 1. 조음 위치, 유성음 여부
-# 2. 조음 방법, 조음 강도
+# 자음 기준
+# - 조음 위치, 유성음 여부
+# - 조음 방법, 조음 강도
 
-# Position (Bilabial) -0.5 --- 0.5 (Glottal)
-conso_pos = { "Bilabial": -0.5, "Alveolar": -0.25, "Alveo-Palatal": 0, "Velar": 0.25, "Glottal": 0.5 }
-# HowToPronunce (Plosive) 0.75 --- -0.25 (Lateral)
+# Position (Bilabial) 0 --- 1 (Glottal)
+conso_pos = { "Bilabial": 0, "Alveolar": 0.25, "Alveo-Palatal": 0.5, "Velar": 0.75, "Glottal": 1 }
+# HowToPronunce (Plosive) 1 --- 0 (Lateral)
 # 파열음(ㅂ, ㅍ, ㅃ, ㄷ, ㅌ, ㄸ, ㄱ, ㅋ, ㄲ), 마찰음(ㅅ, ㅆ, ㅎ), 파찰음(ㅈ, ㅊ, ㅉ), 비음(ㅁ, ㄴ, ㅇ), 유음(ㄹ)
-conso_how = { "Plosive": 0.75, "Fricative": 0.25, "Affricate": 0.5, "Nasal": 0, "Lateral": -0.25 }
+conso_how = { "Plosive": 1, "Fricative": 0.5, "Affricate": 0.75, "Nasal": 0.25, "Lateral": 0 }
 # Strength (Lenis) 0 --- 1 (Fortis)
 conso_str = { "Lenis": 0, "Aspirated": 0.5, "Fortis": 1 }
-# Voice or not (Yes) 0.5 --- -0.5 (No)
+# Voice or not (Yes) 0.5 --- 0 (No)
 # 유성음인지 아닌지 구분
-conso_voi = { "Yes": 0.5, "No": -0.5 }
+conso_voi = { "Yes": 0.5, "No": 0 }
 
 consonants = pd.read_csv(os.path.join(path, "csv", "consonants.csv"))
 consonants["조음강도"] = consonants["조음강도"].replace("None", "Lenis") # None -> Lenis
 consonants = consonants.fillna("Lenis")
 
-# 모음 기준 (중요성 있는 순서대로 나열)
-# 1. 입술 모양
-# 2. 조음 좌우 위치, 조음 상하 위치
+# 모음 기준
+# - 입술 모양
+# - 조음 좌우 위치, 조음 상하 위치
 
-# shape (Unrounded) -0.5 --- 0.5 (Rounded)
+# shape (Unrounded) 0 --- 0.5 (Rounded)
 vowel_shp = { "Unrounded": -0.5, "Rounded+Unrounded": -0.17, "Unrounded+Rounded": 0.17, "Rounded": 0.5 }
-# width position (Front) -0.5 --- 0.5 (Back)
-vowel_wps = { "Front": -0.5, "NearFront": -0.4, "Back+Front": -0.17, "Front+Back": 0.17, "NearBack": 0.4, "Back": 0.5 }
-# height position (Low) -0.5 --- 0.5 (High)
-vowel_hps = { "Low": -0.5, "NearLow": -0.4, "Mid+Low": -0.3, "High+Low": -0.1, "Mid": 0, "High+Mid": 0.2, "NearHigh" : 0.4, "High": 0.5 }
+# width position (Front) 0 --- 1 (Back)
+vowel_wps = { "Front": 0, "NearFront": 0.1, "Back+Front": 0.33, "Front+Back": 0.67, "NearBack": 0.9, "Back": 1 }
+# height position (Low) 0 --- 1 (High)
+vowel_hps = { "Low": 0, "NearLow": 0.1, "Mid+Low": 0.2, "High+Low": 0.4, "Mid": 0.5, "High+Mid": 0.7, "NearHigh" : 0.9, "High": 1 }
 
 vowels = pd.read_csv(os.path.join(path, "csv", "vowels.csv"))
 
@@ -177,29 +177,47 @@ def vectorize_ipa(values, types, origs):
     return vector_values, vector_types, vector_origs
 
 
-# 두 value 사이에서의 score 를 구하는 함수 (1차원) (default)
+# 두 pronunciation 사이에서의 score 를 구하는 함수 (1차원) (default)
 def get_score_1d(values_ans, values_usr):
     assert isinstance(values_ans, list), "1차원 리스트에 대한 입력값만 지원합니다"
     assert not isinstance(values_ans[0], list), "1차원 리스트에 대한 입력값만 지원합니다"
     assert isinstance(values_usr, list), "1차원 리스트에 대한 입력값만 지원합니다"
     assert not isinstance(values_usr[0], list), "1차원 리스트에 대한 입력값만 지원합니다"
     
-    # value_1 과 value_2 의 원소 배열 크기가 다른 경우, max distance (=1) 반환함.
+    # value_1 과 value_2 의 원소 배열 크기가 다른 경우 (자음 / 모음 타입 미일치), max distance (=1) 반환함.
     if len(values_ans) != len(values_usr):
         return 0 # min score 반환
-    
-    sum_score = 0
-    cnt_score = 0
-    
-    for idx in range(len(values_ans)):
-        distance = abs(values_usr[idx] - values_ans[idx])
-        sum_score += (1 - distance) ** 2 # 거듭제곱 형식으로 정답보다 멀수록 점수를 더 차감하는 방식
-        cnt_score += 1
-    
-    return (sum_score / cnt_score) ** 2 # 거듭제곱 형식으로 정답보다 멀수록 점수를 더 차감하는 방식
+
+    # 기본 점수 (여기서 점수를 곱하기로 차감해가는 방식으로 진행)
+    score = 1.0
+
+    # i. 자음의 경우
+    # [ conso_pos_ (조음위치), conso_how_ (조음방법), conso_str_ (조음세기), conso_voi_ (유성음여부) ]
+    if len(values_ans) == 4:
+        # 조음위치 다르면 0 반환
+        if values_ans[0] != values_usr[0]:
+            return 0
+        # 조음방법 다르면 0 반환
+        elif values_ans[1] != values_usr[1]:
+            return 0
+        # 조음세기 및 유성음 미일치 시에 따른 점수 차감
+        else:
+            score *= 1 - abs(values_ans[2] - values_usr[2])
+            score *= 1 - abs(values_ans[3] - values_usr[3])
+            
+    # ii. 모음의 경우
+    # [ vowel_shp_ (입술 모양), vowel_wps_ (입술 좌우), vowel (입술 상하) ]
+    elif len(values_ans) == 3:
+        score *= 1 - abs(values_ans[0] - values_usr[0])
+        score *= 1 - abs(values_ans[1] - values_usr[1])
+        score *= 1 - abs(values_ans[2] - values_usr[2])
+    else:
+        return 0 # handling exception
+        
+    return score
 
 
-# s1 : answer_ipa, s2 : user_ipa
+# s1 : string of answer_ipa, s2 : string of user_ipa
 def get_score(s1, s2, pivot=None, debug=False):
     if len(s1) < len(s2):
         return get_score(s2, s1, s1, debug)
